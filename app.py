@@ -9,6 +9,7 @@ import torch.serialization
 import atexit
 import glob
 import time
+from googletrans import Translator
 
 # Page configuration
 st.set_page_config(
@@ -165,6 +166,15 @@ def load_all_models():
     else:
         st.error("No models could be loaded. Please check the logs.")
 
+def translate_french_to_english(text):
+    """Translate French text to English using Google Translate API"""
+    try:
+        translator = Translator()
+        result = translator.translate(text, src='fr', dest='en')
+        return result.text
+    except Exception as e:
+        return f"Translation error: {str(e)}"
+
 def main():
     st.title("🎤 Coqui TTS Voice Generator")
     st.markdown("Generate natural-sounding speech from text using Coqui TTS")
@@ -269,7 +279,7 @@ def main():
                     audio_file = generate_audio(text_input, st.session_state.tts_model, speaker, None, voice_speed)
                 else:
                     audio_file = generate_audio(text_input, st.session_state.tts_model, None, None, voice_speed)
-                    
+                
                 if audio_file:
                     with open(audio_file, "rb") as f:
                         audio_bytes = f.read()
@@ -283,6 +293,12 @@ def main():
                     )
                     os.unlink(audio_file)
                     st.success("✅ Reading complete!")
+        # French to English translation (shown below audio player)
+        if text_input.strip():
+            st.markdown("---")
+            st.subheader("🇬🇧 English Translation")
+            translation = translate_french_to_english(text_input)
+            st.write(translation)
     
     # Instructions and tips
     with st.expander("📖 Comment Utiliser"):
